@@ -9,12 +9,13 @@ void runCommand(char **args, char **commands, int index);
 void split(char *value, char **parsed, char *parser);
 int isEmpty(char *value);
 int runArgs(char **args);
-int redirectCommand(char **args, char **commands);
+int checkCommand(char **args, char **commands);
 int checkShellState(char *command, char **args);
 int checkTekrarState(char **args);
 int checkIslemState(char **args);
 int isNumber(char *value);
 
+//parametre olarak gonderilen degerin bos olup olmadigini kontrol eder
 int isEmpty(char *value){
     while (*value != '\0'){
         if (*value != ' ') return 0;
@@ -23,6 +24,7 @@ int isEmpty(char *value){
     return 1;
 }
 
+//kullanicidan input alir
 void takeInput(char *value){
     printf("\nmyshell>>");
     fgets(value, 1000, stdin);
@@ -35,6 +37,7 @@ void takeInput(char *value){
     }
 }
 
+//komutlari calistirir
 int runArgs(char **args){
     int pid = fork();
     int result = 0;
@@ -62,7 +65,8 @@ int runArgs(char **args){
     return result;
 }
 
-int redirectCommand(char **args, char **commands){
+//kisinin girdigi komutlari kontrol eder
+int checkCommand(char **args, char **commands){
     int isThereCommand = 0;
     int i = 0;
     while (commands[i] != NULL){
@@ -80,6 +84,7 @@ int redirectCommand(char **args, char **commands){
     return 0;
 }
 
+//komutlarin calistirildigi yer
 void runCommand(char **args, char **commands, int index){
     if (strcmp("islem", commands[index]) == 0){
         int result = runArgs(args);
@@ -101,6 +106,7 @@ void runCommand(char **args, char **commands, int index){
     }
 }
 
+//gonderilen degerin split edilmesini sagliyor
 void split(char *value, char **parsed, char *parser){
     int i = 0;
     while ((parsed[i] = strsep(&value, parser)) != NULL){
@@ -109,6 +115,7 @@ void split(char *value, char **parsed, char *parser){
     }
 }
 
+//ana komutlar kontrol ediliyor
 int checkShellState(char *command, char **args){
     if (strcmp("islem", command) == 0){
         return checkIslemState(args);
@@ -119,6 +126,7 @@ int checkShellState(char *command, char **args){
     return 0;
 }
 
+//tekrar komutuna uyuyor mu diye kontrol ediliyor
 int checkTekrarState(char **args){
     int i = 0;
     while (args[i] != NULL) i++;
@@ -127,6 +135,7 @@ int checkTekrarState(char **args){
     return 0;
 }
 
+//islem komutuna uyuyor mu diye kontrol ediliyor
 int checkIslemState(char **args){
     int i = 0;
     while (args[i] != NULL) i++;
@@ -136,6 +145,7 @@ int checkIslemState(char **args){
     return 0;
 }
 
+//gonderilen deger sayi mi diye kontrol ediliyor
 int isNumber(char *value){
     int i = 0;
     while (*value != '\0'){
@@ -160,13 +170,15 @@ int main(){
     char *processes[100] = {NULL};
     int i;
     while (1){
-        takeInput(inputValue);
+        takeInput(inputValue);//kullanicidan input aliyor
+        //alinan input kontrol ediliyor
         if (isEmpty(inputValue)) continue;
+        //birden fazla komut olabilir '|' isareti ile komutlar bolunuyor
         split(inputValue, processes, "|");
         i = 0;
         while (processes[i] != NULL){
             split(processes[i], args, " ");
-            if (redirectCommand(args, commands)){
+            if (checkCommand(args, commands)){
                 printf("yanlis bir komut girdiniz!\n");
             }
             i++;
